@@ -1,0 +1,155 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Offerlane API",
+    "version": "0.1.0",
+    "description": "Placeholder OpenAPI specification for the Offerlane find/tailor/apply/track API. Endpoints are illustrative and subject to change before general availability.",
+    "contact": {
+      "name": "Offerlane",
+      "email": "support@offerlane.com"
+    }
+  },
+  "servers": [
+    { "url": "https://api.offerlane.com/v1", "description": "Production (placeholder)" }
+  ],
+  "paths": {
+    "/jobs/search": {
+      "get": {
+        "summary": "Search matching job postings",
+        "operationId": "searchJobs",
+        "parameters": [
+          { "name": "role", "in": "query", "schema": { "type": "string" } },
+          { "name": "location", "in": "query", "schema": { "type": "string" } },
+          { "name": "minFitScore", "in": "query", "schema": { "type": "number", "minimum": 0, "maximum": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of matching postings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/JobPosting" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resumes/tailor": {
+      "post": {
+        "summary": "Tailor a resume for a specific job posting",
+        "operationId": "tailorResume",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["resumeId", "jobId"],
+                "properties": {
+                  "resumeId": { "type": "string" },
+                  "jobId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The tailored resume",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TailoredResume" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/applications": {
+      "post": {
+        "summary": "Submit an application",
+        "operationId": "submitApplication",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["jobId", "tailoredResumeId"],
+                "properties": {
+                  "jobId": { "type": "string" },
+                  "tailoredResumeId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created application",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Application" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List submitted applications and their statuses",
+        "operationId": "listApplications",
+        "responses": {
+          "200": {
+            "description": "A list of applications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Application" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JobPosting": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "company": { "type": "string" },
+          "location": { "type": "string" },
+          "ats": { "type": "string" },
+          "fitScore": { "type": "number" }
+        }
+      },
+      "TailoredResume": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "jobId": { "type": "string" },
+          "content": { "type": "string" }
+        }
+      },
+      "Application": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "jobId": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["queued", "applied", "interview", "rejected"]
+          },
+          "submittedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

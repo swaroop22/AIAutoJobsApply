@@ -1,0 +1,32 @@
+# Offerlane
+
+> Offerlane is a free AI job-application agent. It finds matching job postings, tailors your
+> resume per listing, submits the application through the employer's real applicant tracking
+> system, and tracks replies — automatically.
+
+## Key facts
+
+- Free. No pricing tiers, no trial, no payment required.
+- No account or login required. Resume and preferences are stored locally in the user's browser.
+- Core loop: find → tailor → apply → track.
+- Submits through real ATS platforms (Greenhouse, Lever, Workday, Ashby, iCIMS, and others),
+  not a browser autofill shortcut.
+- Two modes: Review (approve each application) and Auto Apply (fully automated, subject to a
+  daily fair-use cap).
+- Does not fabricate work experience, education, or credentials.
+
+## Pages
+
+- [Homepage](https://offerlane.com/): overview, pricing stance, FAQ.
+- [App](https://offerlane.com/app): the product itself.
+- [Auto Apply](https://offerlane.com/auto-apply): details on automated submission mode.
+- [Interview prep](https://offerlane.com/interview-prep): mock interviews, coding practice,
+  system design, feedback scoring.
+- [MCP server](https://offerlane.com/mcp): programmatic access for agents.
+- [FAQ](https://offerlane.com/#faq): common questions, including data storage and visa filters.
+
+## Machine-readable resources
+
+- [/agents.md](https://offerlane.com/agents.md) — plain-language description for agent frameworks.
+- [/openapi.json](https://offerlane.com/openapi.json) — OpenAPI spec for the core API.
+- [/sitemap.xml](https://offerlane.com/sitemap.xml) — full site map.
