@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkTailorRateLimit } from '@/lib/tailor/rate-limit';
 import { tailorResume } from '@/lib/tailor/anthropic';
+import { tailorResumeWithGemini } from '@/lib/tailor/gemini';
 import type { ResumeExperience } from '@/lib/app-db/types';
 
 export const runtime = 'nodejs';
@@ -23,9 +24,15 @@ function getClientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  const hasAnthropic = Boolean(process.env.ANTHROPIC_API_KEY);
+
+  if (!hasGemini && !hasAnthropic) {
     return NextResponse.json(
-      { error: 'not_configured', message: 'Résumé tailoring is not configured on this server.' },
+      {
+        error: 'not_configured',
+        message: 'Résumé tailoring is not configured on this server. Please add GEMINI_API_KEY to your .env.local file.',
+      },
       { status: 503 },
     );
   }
@@ -55,7 +62,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await tailorResume({
+    const tailorFn = hasGemini ? tailorResumeWithGemini : tailorResume;
+    const result = await tailorFn({
       jobTitle: body.jobTitle,
       company: body.company,
       jobDescription: body.jobDescription ?? '',

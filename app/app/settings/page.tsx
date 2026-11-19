@@ -65,7 +65,7 @@ export default function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'offerlane-data.json';
+    a.download = 'rolepilot-data.json';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -86,7 +86,7 @@ export default function SettingsPage() {
       setProfile(p ?? null);
       setPreferences(prefs ?? null);
     } catch {
-      setImportMessage("Couldn't read that file — make sure it's an Offerlane export.");
+      setImportMessage("Couldn't read that file — make sure it's an RolePilot export.");
     }
   }
 

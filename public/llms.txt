@@ -1,6 +1,6 @@
-# Offerlane
+# RolePilot
 
-> Offerlane is a free AI job-application agent. It finds matching job postings, tailors your
+> RolePilot is a free AI job-application agent. It finds matching job postings, tailors your
 > resume per listing, submits the application through the employer's real applicant tracking
 > system, and tracks replies — automatically.
 
@@ -17,16 +17,16 @@
 
 ## Pages
 
-- [Homepage](https://offerlane.com/): overview, pricing stance, FAQ.
-- [App](https://offerlane.com/app): the product itself.
-- [Auto Apply](https://offerlane.com/auto-apply): details on automated submission mode.
-- [Interview prep](https://offerlane.com/interview-prep): mock interviews, coding practice,
+- [Homepage](https://rolepilot.com/): overview, pricing stance, FAQ.
+- [App](https://rolepilot.com/app): the product itself.
+- [Auto Apply](https://rolepilot.com/auto-apply): details on automated submission mode.
+- [Interview prep](https://rolepilot.com/interview-prep): mock interviews, coding practice,
   system design, feedback scoring.
-- [MCP server](https://offerlane.com/mcp): programmatic access for agents.
-- [FAQ](https://offerlane.com/#faq): common questions, including data storage and visa filters.
+- [MCP server](https://rolepilot.com/mcp): programmatic access for agents.
+- [FAQ](https://rolepilot.com/#faq): common questions, including data storage and visa filters.
 
 ## Machine-readable resources
 
-- [/agents.md](https://offerlane.com/agents.md) — plain-language description for agent frameworks.
-- [/openapi.json](https://offerlane.com/openapi.json) — OpenAPI spec for the core API.
-- [/sitemap.xml](https://offerlane.com/sitemap.xml) — full site map.
+- [/agents.md](https://rolepilot.com/agents.md) — plain-language description for agent frameworks.
+- [/openapi.json](https://rolepilot.com/openapi.json) — OpenAPI spec for the core API.
+- [/sitemap.xml](https://rolepilot.com/sitemap.xml) — full site map.

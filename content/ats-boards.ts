@@ -18,30 +18,14 @@ export type AtsBoard = {
  *   Lever      — api.lever.co/v0/postings/<slug>?mode=json
  *   Ashby      — api.ashbyhq.com/posting-api/job-board/<slug>
  */
+/**
+ * Healthcare, health systems, clinical operations, and health-tech ATS boards.
+ * Generic tech companies (e.g. software engineer / intern postings at Stripe,
+ * Pinterest, Ramp, etc.) are excluded so candidate feeds remain focused on
+ * healthcare, hospital networks, clinical operations, medical coding, and billing.
+ */
 export const ATS_BOARDS: AtsBoard[] = [
-  { provider: 'greenhouse', slug: 'stripe', company: 'Stripe' },
-  { provider: 'greenhouse', slug: 'airbnb', company: 'Airbnb' },
-  { provider: 'greenhouse', slug: 'coinbase', company: 'Coinbase' },
-  { provider: 'greenhouse', slug: 'asana', company: 'Asana' },
-  { provider: 'greenhouse', slug: 'dropbox', company: 'Dropbox' },
-  { provider: 'greenhouse', slug: 'pinterest', company: 'Pinterest' },
-  { provider: 'greenhouse', slug: 'cloudflare', company: 'Cloudflare' },
-  { provider: 'greenhouse', slug: 'gitlab', company: 'GitLab' },
-  { provider: 'greenhouse', slug: 'robinhood', company: 'Robinhood' },
-  { provider: 'lever', slug: 'palantir', company: 'Palantir' },
-  { provider: 'lever', slug: 'spotify', company: 'Spotify' },
-  { provider: 'ashby', slug: 'notion', company: 'Notion' },
-  { provider: 'ashby', slug: 'linear', company: 'Linear' },
-  { provider: 'ashby', slug: 'ramp', company: 'Ramp' },
-  { provider: 'ashby', slug: 'substack', company: 'Substack' },
-
-  // Healthcare / health-tech, added 2026-11-17. Note: none of these (or any
-  // other company checked on Greenhouse/Lever/Ashby's public boards) had a
-  // literal "Medical Coder" opening at verification time — medical coding is
-  // mostly hired through RCM outsourcing firms and hospital systems that use
-  // Workday/iCIMS/Taleo, not these three providers. These boards do carry
-  // adjacent billing/RCM/clinical-ops roles (e.g. "Medical Biller" at Candid
-  // Health).
+  // Healthcare, health-tech, and clinical operations boards
   { provider: 'greenhouse', slug: 'garnerhealth', company: 'Garner Health' },
   { provider: 'greenhouse', slug: 'omadahealth', company: 'Omada Health' },
   { provider: 'greenhouse', slug: 'rightwayhealthcare', company: 'Rightway' },
@@ -80,6 +64,86 @@ export type WorkdayBoard = {
 };
 
 export const WORKDAY_BOARDS: WorkdayBoard[] = [
+  {
+    provider: 'workday',
+    tenant: 'stormontvail',
+    wdNumber: 1,
+    site: 'SVH',
+    company: 'Stormont Vail Health',
+    searchTerms: ['coder', 'coding', 'HIM', 'billing'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'adventhealth',
+    wdNumber: 12,
+    site: 'AH_External_Career_Site',
+    company: 'AdventHealth',
+    searchTerms: ['coder', 'coding', 'HIM', 'billing'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'corrohealth',
+    wdNumber: 1,
+    site: 'Corro',
+    company: 'CorroHealth',
+    searchTerms: ['coder', 'coding', 'specialist'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'memorialhealthcare',
+    wdNumber: 1,
+    site: 'MHS_Careers',
+    company: 'Memorial Healthcare System',
+    searchTerms: ['coder', 'coding', 'HIM', 'billing'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'ummc',
+    wdNumber: 5,
+    site: 'umccareers',
+    company: 'UMMC Health',
+    searchTerms: ['coder', 'coding', 'HIM'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'vumc',
+    wdNumber: 1,
+    site: 'VUMCCareers',
+    company: 'Vanderbilt Health (VUMC)',
+    searchTerms: ['coder', 'coding', 'HIM'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'wellstar',
+    wdNumber: 1,
+    site: 'WellstarCareers',
+    company: 'Wellstar Health System',
+    searchTerms: ['coder', 'coding', 'auditor'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'cookchildrens',
+    wdNumber: 1,
+    site: 'Cook_Childrens_Careers',
+    company: "Cook Children's Health",
+    searchTerms: ['coder', 'coding', 'HIM'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'promedica',
+    wdNumber: 12,
+    site: 'External_Careers',
+    company: 'ProMedica Health',
+    searchTerms: ['coder', 'coding'],
+  },
+  {
+    provider: 'workday',
+    tenant: 'osu',
+    wdNumber: 1,
+    site: 'OSUCareers',
+    company: 'Ohio State Wexner Medical',
+    searchTerms: ['coder', 'coding', 'revenue integrity'],
+  },
   {
     provider: 'workday',
     tenant: 'r1rcm',

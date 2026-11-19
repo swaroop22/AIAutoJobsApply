@@ -38,6 +38,9 @@ export function PreferencesStep({
           placeholder="e.g. Product Designer, press Enter"
         />
       </div>
+      <p className="mt-1 text-xs text-ink/50">
+        Suggested from your résumé. Press Enter or comma to add more, or ✕ to remove.
+      </p>
 
       <label className="mt-4 block text-sm font-medium">Locations</label>
       <div className="mt-1.5">

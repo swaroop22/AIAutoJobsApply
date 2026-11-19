@@ -19,7 +19,7 @@ const questrial = Questrial({
 });
 
 export const metadata: Metadata = {
-  ...buildMetadata({ title: 'Offerlane — The free AI agent that applies for you' }),
+  ...buildMetadata({ title: 'RolePilot — The free AI agent that applies for you' }),
   metadataBase: new URL(SITE_URL),
 };
 

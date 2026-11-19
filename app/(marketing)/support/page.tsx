@@ -3,8 +3,8 @@ import { Reveal } from '@/components/Reveal';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Support — Offerlane',
-  description: 'Get help with Offerlane.',
+  title: 'Support — RolePilot',
+  description: 'Get help with RolePilot.',
   path: '/support',
 });
 
@@ -20,13 +20,13 @@ export default function SupportPage() {
         </Reveal>
         <Reveal delay={120}>
           <p className="mt-5 text-body">
-            Offerlane doesn't have accounts, so there's no ticketing system tied to a login. For
+            RolePilot doesn't have accounts, so there's no ticketing system tied to a login. For
             bugs, questions, or feedback, reach us directly and we'll get back to you.
           </p>
         </Reveal>
         <Reveal delay={180}>
-          <a href="mailto:support@offerlane.com" className="ol-btn-solid mt-8 inline-flex">
-            Email support@offerlane.com
+          <a href="mailto:support@rolepilot.com" className="ol-btn-solid mt-8 inline-flex">
+            Email support@rolepilot.com
           </a>
         </Reveal>
         <Reveal delay={220}>

@@ -3,8 +3,8 @@ import { Reveal } from '@/components/Reveal';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Offerlane MCP server',
-  description: 'Plug Offerlane into Claude, Cursor, or your own agent stack over MCP.',
+  title: 'RolePilot MCP server',
+  description: 'Plug RolePilot into Claude, Cursor, or your own agent stack over MCP.',
   path: '/mcp',
 });
 
@@ -29,7 +29,7 @@ export default function McpPage() {
         </Reveal>
         <Reveal delay={120}>
           <p className="mt-5 max-w-xl text-body">
-            The Offerlane MCP server exposes the same find-tailor-apply-track primitives that
+            The RolePilot MCP server exposes the same find-tailor-apply-track primitives that
             power the dashboard, so you can call them from Claude, Cursor, or a custom agent.
           </p>
         </Reveal>
@@ -40,11 +40,11 @@ export default function McpPage() {
             <br />
             &nbsp;&nbsp;"mcpServers": {'{'}
             <br />
-            &nbsp;&nbsp;&nbsp;&nbsp;"offerlane": {'{'}
+            &nbsp;&nbsp;&nbsp;&nbsp;"rolepilot": {'{'}
             <br />
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",
             <br />
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@offerlane/mcp-server"]
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@rolepilot/mcp-server"]
             <br />
             &nbsp;&nbsp;&nbsp;&nbsp;{'}'}
             <br />

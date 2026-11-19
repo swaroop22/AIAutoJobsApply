@@ -45,7 +45,7 @@ export function Header() {
       >
         <div className="ol-container flex h-16 items-center justify-between">
           <a href="/" className="font-display text-lg tracking-tight text-ink">
-            Offerlane
+            RolePilot
           </a>
 
           <nav className="hidden items-center gap-8 md:flex">

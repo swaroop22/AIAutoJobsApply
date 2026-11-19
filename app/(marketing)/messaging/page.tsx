@@ -4,7 +4,7 @@ import { Reveal } from '@/components/Reveal';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Offerlane on iMessage & WhatsApp',
+  title: 'RolePilot on iMessage & WhatsApp',
   description: 'Get match alerts and approve applications over iMessage or WhatsApp — no app required.',
   path: '/messaging',
 });
@@ -41,7 +41,7 @@ export default function MessagingPage() {
         </Reveal>
         <Reveal delay={120}>
           <p className="mt-5 max-w-xl text-body">
-            For people who'd rather handle this from a text thread, Offerlane can send match
+            For people who'd rather handle this from a text thread, RolePilot can send match
             alerts and take approvals over iMessage or WhatsApp.
           </p>
         </Reveal>

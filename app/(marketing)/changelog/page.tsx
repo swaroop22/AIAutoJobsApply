@@ -3,8 +3,8 @@ import { Reveal } from '@/components/Reveal';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Changelog — Offerlane',
-  description: 'What shipped recently in Offerlane.',
+  title: 'Changelog — RolePilot',
+  description: 'What shipped recently in RolePilot.',
   path: '/changelog',
 });
 
@@ -22,7 +22,7 @@ const ENTRIES = [
   {
     date: '2026-09-02',
     title: 'MCP server released',
-    body: 'Offerlane\'s find/tailor/apply/track tools are now available over MCP for use in Claude, Cursor, and custom agents.',
+    body: 'RolePilot\'s find/tailor/apply/track tools are now available over MCP for use in Claude, Cursor, and custom agents.',
   },
 ];
 

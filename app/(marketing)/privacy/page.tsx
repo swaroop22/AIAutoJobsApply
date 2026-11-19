@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Privacy policy — Offerlane',
-  description: 'How Offerlane handles your data.',
+  title: 'Privacy policy — RolePilot',
+  description: 'How RolePilot handles your data.',
   path: '/privacy',
 });
 
@@ -16,14 +16,14 @@ export default function PrivacyPage() {
 
         <h2>No account, minimal data</h2>
         <p>
-          Offerlane does not require you to create an account. Your resume, job preferences, and
+          RolePilot does not require you to create an account. Your resume, job preferences, and
           application history are stored locally in your browser rather than in a central
           per-user database. We do not sell personal data.
         </p>
 
         <h2>What we do collect</h2>
         <p>
-          When Offerlane submits an application on your behalf, the information in that
+          When RolePilot submits an application on your behalf, the information in that
           application (your resume and your answers to screening questions) is sent to the
           relevant employer's applicant tracking system, exactly as it would be if you submitted
           it yourself. We also collect basic, aggregated usage analytics (such as page views and
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
 
         <h2>Third parties</h2>
         <p>
-          Offerlane submits applications through employers' own applicant tracking systems
+          RolePilot submits applications through employers' own applicant tracking systems
           (Greenhouse, Lever, Workday, and others). Those systems have their own privacy
           practices once your application is submitted.
         </p>
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
         <h2>Contact</h2>
         <p>
           Questions about this policy can be sent to{' '}
-          <a href="mailto:privacy@offerlane.com">privacy@offerlane.com</a>.
+          <a href="mailto:privacy@rolepilot.com">privacy@rolepilot.com</a>.
         </p>
       </div>
     </section>

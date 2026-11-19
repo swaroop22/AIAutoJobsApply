@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
-export const SITE_NAME = 'Offerlane';
-export const SITE_URL = 'https://offerlane.com';
+export const SITE_NAME = 'RolePilot';
+export const SITE_URL = 'https://rolepilot.com';
 export const SITE_DESCRIPTION =
-  'Offerlane is a free AI job-application agent that finds matching roles, tailors your resume, submits applications, and tracks replies — no account, no card, no cost.';
+  'RolePilot is a free AI job-application agent that finds matching roles, tailors your resume, submits applications, and tracks replies — no account, no card, no cost.';
 
 export function buildMetadata(opts: {
   title: string;

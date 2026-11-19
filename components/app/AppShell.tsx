@@ -25,20 +25,24 @@ function TopBar({ pathname }: { pathname: string }) {
   return (
     <header className="app-topbar">
       <h1 className="text-lg font-semibold">{activeLabel}</h1>
-      <div className="relative w-full max-w-md">
-        <SearchIcon
-          size={15}
-          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35"
-          aria-hidden="true"
-        />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by title, company…"
-          className="w-full rounded-xl border border-ink/10 bg-black/[0.02] py-2 pl-9 pr-3 text-sm outline-none focus:border-ink/30 focus:bg-white"
-        />
+      {!pathname.startsWith('/app/jobs') && (
+        <div className="relative w-full max-w-md">
+          <SearchIcon
+            size={15}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35"
+            aria-hidden="true"
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by title, company…"
+            className="w-full rounded-xl border border-ink/10 bg-black/[0.02] py-2 pl-9 pr-3 text-sm outline-none focus:border-ink/30 focus:bg-white"
+          />
+        </div>
+      )}
+      <div className="ml-auto flex items-center gap-2">
+        <span className="app-badge shrink-0">Stored only in this browser</span>
       </div>
-      <span className="app-badge shrink-0">Stored only in this browser</span>
     </header>
   );
 }
@@ -53,7 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="app-shell-grid">
           <aside className="app-sidebar">
             <Link href="/app" className="app-sidebar-logo">
-              Offerlane
+              RolePilot
             </Link>
             <p className="app-sidebar-section">Dashboard</p>
             <nav className="flex flex-col gap-1" aria-label="App navigation">
@@ -78,7 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
             <div className="mt-auto pt-6">
               <Link href="/" className="app-sidebar-footer-link">
-                ← Back to offerlane.com
+                ← Back to rolepilot.com
               </Link>
             </div>
           </aside>

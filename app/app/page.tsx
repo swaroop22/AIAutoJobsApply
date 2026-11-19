@@ -51,7 +51,9 @@ export default function AppOverviewPage() {
 
   const topMatches = useMemo(() => {
     if (!preferences || jobs.length === 0) return [];
-    return scoreJobs(jobs, preferences).slice(0, 4);
+    return scoreJobs(jobs, preferences)
+      .filter((j) => j.fitScore >= 50)
+      .slice(0, 4);
   }, [jobs, preferences]);
 
   const filteredEntries = useMemo(() => {

@@ -4,7 +4,7 @@ import { Reveal } from '@/components/Reveal';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Offerlane on mobile',
+  title: 'RolePilot on mobile',
   description: 'Review matches and approve applications from iOS and Android — coming soon.',
   path: '/mobile',
 });

@@ -64,7 +64,7 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
       className="fixed inset-0 z-[60] flex flex-col bg-paper"
     >
       <div className="ol-container flex items-center justify-between py-5">
-        <span className="font-display text-lg">Offerlane</span>
+        <span className="font-display text-lg">RolePilot</span>
         <button
           ref={closeButtonRef}
           onClick={onClose}

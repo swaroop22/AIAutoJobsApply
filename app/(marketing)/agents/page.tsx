@@ -3,13 +3,13 @@ import { Reveal } from '@/components/Reveal';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'For agents — Offerlane',
+  title: 'For agents — RolePilot',
   description: 'Machine-readable resources for agents and crawlers: agents.md, llms.txt, and an OpenAPI spec.',
   path: '/agents',
 });
 
 const RESOURCES = [
-  { href: '/agents.md', label: '/agents.md', body: 'Plain-markdown description of Offerlane for agent frameworks.' },
+  { href: '/agents.md', label: '/agents.md', body: 'Plain-markdown description of RolePilot for agent frameworks.' },
   { href: '/llms.txt', label: '/llms.txt', body: 'A concise summary formatted for LLM context windows.' },
   { href: '/openapi.json', label: '/openapi.json', body: 'OpenAPI spec for the find/tailor/apply/track endpoints.' },
 ];
@@ -26,7 +26,7 @@ export default function AgentsPage() {
         </Reveal>
         <Reveal delay={120}>
           <p className="mt-5 text-body">
-            Offerlane is free and open — no account required to use it, and no account required
+            RolePilot is free and open — no account required to use it, and no account required
             to describe it to another agent. These resources are plain text, versioned, and safe
             to crawl.
           </p>

@@ -5,7 +5,7 @@ export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const title = searchParams.get('title') ?? 'Offerlane';
+  const title = searchParams.get('title') ?? 'RolePilot';
 
   return new ImageResponse(
     (
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
           padding: '72px',
         }}
       >
-        <div style={{ display: 'flex', fontSize: 28, color: '#000000' }}>Offerlane</div>
+        <div style={{ display: 'flex', fontSize: 28, color: '#000000' }}>RolePilot</div>
         <div
           style={{
             display: 'flex',

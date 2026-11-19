@@ -13,9 +13,9 @@ import { ForAgents } from '@/components/sections/ForAgents';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Offerlane — The free AI agent that applies for you',
+  title: 'RolePilot — The free AI agent that applies for you',
   description:
-    'Offerlane finds matching jobs, tailors your resume, submits applications, and tracks replies — automatically, for free, with no account required.',
+    'RolePilot finds matching jobs, tailors your resume, submits applications, and tracks replies — automatically, for free, with no account required.',
   path: '/',
 });
 

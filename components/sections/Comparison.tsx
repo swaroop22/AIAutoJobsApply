@@ -29,7 +29,7 @@ export function Comparison() {
         </Reveal>
         <Reveal delay={60}>
           <h2 className="ol-h2 mt-3 max-w-xl text-ink">
-            Autofill saves you typing. Offerlane does the whole job.
+            Autofill saves you typing. RolePilot does the whole job.
           </h2>
         </Reveal>
 
@@ -49,7 +49,7 @@ export function Comparison() {
                   <tr key={row.feature}>
                     <td className="font-medium text-ink">{row.feature}</td>
                     <td>
-                      <Cell value={row.offerlane} />
+                      <Cell value={row.rolepilot} />
                     </td>
                     <td>
                       <Cell value={row.autofill} />

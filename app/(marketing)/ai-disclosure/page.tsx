@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'AI disclosure — Offerlane',
-  description: 'How Offerlane uses AI in the application process.',
+  title: 'AI disclosure — RolePilot',
+  description: 'How RolePilot uses AI in the application process.',
   path: '/ai-disclosure',
 });
 
@@ -16,7 +16,7 @@ export default function AiDisclosurePage() {
 
         <h2>Where AI is used</h2>
         <p>
-          Offerlane uses AI to match job postings against your stated background, to tailor the
+          RolePilot uses AI to match job postings against your stated background, to tailor the
           wording and ordering of your resume for a specific listing, and to draft summaries of
           recruiter replies for your tracker.
         </p>
@@ -39,7 +39,7 @@ export default function AiDisclosurePage() {
         <p>
           If you're an employer or recruiter with questions about how a specific application was
           generated, reach us at{' '}
-          <a href="mailto:ai-disclosure@offerlane.com">ai-disclosure@offerlane.com</a>.
+          <a href="mailto:ai-disclosure@rolepilot.com">ai-disclosure@rolepilot.com</a>.
         </p>
       </div>
     </section>

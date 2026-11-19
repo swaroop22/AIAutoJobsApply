@@ -4,7 +4,7 @@ import { blogPosts } from '@/lib/blog';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Blog — Offerlane',
+  title: 'Blog — RolePilot',
   description: 'Notes on job search speed, ATS behavior, and getting replies faster.',
   path: '/blog',
 });

@@ -1,16 +1,16 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Offerlane API",
+    "title": "RolePilot API",
     "version": "0.1.0",
-    "description": "Placeholder OpenAPI specification for the Offerlane find/tailor/apply/track API. Endpoints are illustrative and subject to change before general availability.",
+    "description": "Placeholder OpenAPI specification for the RolePilot find/tailor/apply/track API. Endpoints are illustrative and subject to change before general availability.",
     "contact": {
-      "name": "Offerlane",
-      "email": "support@offerlane.com"
+      "name": "RolePilot",
+      "email": "support@rolepilot.com"
     }
   },
   "servers": [
-    { "url": "https://api.offerlane.com/v1", "description": "Production (placeholder)" }
+    { "url": "https://api.rolepilot.com/v1", "description": "Production (placeholder)" }
   ],
   "paths": {
     "/jobs/search": {

@@ -44,7 +44,7 @@ export type Preferences = {
   updatedAt: string;
 };
 
-export type JobProvider = 'greenhouse' | 'lever' | 'ashby' | 'workday';
+export type JobProvider = 'greenhouse' | 'lever' | 'ashby' | 'workday' | 'custom';
 
 export type JobPosting = {
   id: string;

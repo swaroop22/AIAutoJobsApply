@@ -11,11 +11,11 @@ export type Lander = {
 export const landers: Record<string, Lander> = {
   'auto-apply': {
     slug: 'auto-apply',
-    title: 'Auto Apply — Offerlane',
+    title: 'Auto Apply — RolePilot',
     eyebrow: 'Auto apply',
     h1: 'Let the agent submit applications while you do literally anything else.',
     intro:
-      'Auto Apply turns on fully automated submissions: once a listing clears your fit threshold, Offerlane tailors your resume and submits it through the real application flow, no click required from you.',
+      'Auto Apply turns on fully automated submissions: once a listing clears your fit threshold, RolePilot tailors your resume and submits it through the real application flow, no click required from you.',
     bullets: [
       {
         title: 'You set the bar',
@@ -38,17 +38,17 @@ export const landers: Record<string, Lander> = {
       },
       {
         question: 'Does Auto Apply ever submit to the same job twice?',
-        answer: 'No — Offerlane deduplicates by company and posting before anything is queued, on or off auto mode.',
+        answer: 'No — RolePilot deduplicates by company and posting before anything is queued, on or off auto mode.',
       },
     ],
   },
   'new-grads': {
     slug: 'new-grads',
-    title: 'For new grads — Offerlane',
+    title: 'For new grads — RolePilot',
     eyebrow: 'New grads',
     h1: 'Graduating into a flooded market? Apply at the speed it moves.',
     intro:
-      'Entry-level postings close fast and get hundreds of applicants in the first day. Offerlane watches for new-grad and early-career listings the moment they post and gets your tailored resume in before the queue fills up.',
+      'Entry-level postings close fast and get hundreds of applicants in the first day. RolePilot watches for new-grad and early-career listings the moment they post and gets your tailored resume in before the queue fills up.',
     bullets: [
       {
         title: 'Entry-level filters built in',
@@ -71,17 +71,17 @@ export const landers: Record<string, Lander> = {
       },
       {
         question: 'Can I target specific companies on top of the open search?',
-        answer: 'Yes — add a watchlist of specific employers and Offerlane prioritizes postings from them in your feed.',
+        answer: 'Yes — add a watchlist of specific employers and RolePilot prioritizes postings from them in your feed.',
       },
     ],
   },
   international: {
     slug: 'international',
-    title: 'For international students — Offerlane',
+    title: 'For international students — RolePilot',
     eyebrow: 'International students',
     h1: 'Built-in filters for OPT, CPT, and visa sponsorship — so you stop guessing.',
     intro:
-      'Searching manually means opening dozens of listings just to find the one line about sponsorship. Offerlane surfaces that detail upfront and flags roles where it\'s ambiguous, so your time goes to jobs you can actually take.',
+      'Searching manually means opening dozens of listings just to find the one line about sponsorship. RolePilot surfaces that detail upfront and flags roles where it\'s ambiguous, so your time goes to jobs you can actually take.',
     bullets: [
       {
         title: 'Sponsorship-aware filtering',
@@ -98,7 +98,7 @@ export const landers: Record<string, Lander> = {
     ],
     faq: [
       {
-        question: 'Does Offerlane guarantee a role will sponsor me?',
+        question: 'Does RolePilot guarantee a role will sponsor me?',
         answer:
           'No — sponsorship language is pulled directly from the posting and flagged for your review, not guaranteed. Always confirm directly with the employer before relying on it.',
       },

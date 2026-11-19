@@ -11,7 +11,7 @@ const CARDS = [
   {
     icon: CreditCard,
     title: 'No card',
-    body: 'Nothing to enter, nothing to forget to cancel. Offerlane never asks for billing details at any point in the flow.',
+    body: 'Nothing to enter, nothing to forget to cancel. RolePilot never asks for billing details at any point in the flow.',
   },
   {
     icon: InfinityIcon,

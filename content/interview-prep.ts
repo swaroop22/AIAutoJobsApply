@@ -12,7 +12,7 @@ export const interviewPrepTools: InterviewPrepTool[] = [
     name: 'Mock interview',
     description: 'Practice behavioral and role-specific questions with instant spoken feedback.',
     longDescription:
-      'Run a timed mock interview against questions pulled from the same company and role you\'re applying to. Offerlane listens to your answer, flags filler words and rambling, and suggests a tighter version using the STAR structure.',
+      'Run a timed mock interview against questions pulled from the same company and role you\'re applying to. RolePilot listens to your answer, flags filler words and rambling, and suggests a tighter version using the STAR structure.',
     icon: 'mic',
   },
   {

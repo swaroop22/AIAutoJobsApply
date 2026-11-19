@@ -7,7 +7,7 @@ import { buildMetadata } from '@/lib/seo';
 const ICONS = { mic: Mic, 'code-2': Code2, network: Network, 'line-chart': LineChart };
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Interview prep — Offerlane',
+  title: 'Interview prep — RolePilot',
   description: 'Mock interviews, coding practice, system design, and feedback scoring — free, in beta.',
   path: '/interview-prep',
 });
@@ -21,7 +21,7 @@ export default function InterviewPrepIndexPage() {
         </Reveal>
         <Reveal delay={60}>
           <h1 className="ol-h1 mt-3 max-w-2xl text-ink">
-            Four tools to get ready for the interviews Offerlane lands you.
+            Four tools to get ready for the interviews RolePilot lands you.
           </h1>
         </Reveal>
 

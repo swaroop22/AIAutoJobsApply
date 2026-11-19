@@ -1,6 +1,6 @@
-# Offerlane — marketing site
+# RolePilot — marketing site
 
-Marketing site for Offerlane, a free AI job-application agent. No accounts, no payments, no
+Marketing site for RolePilot, a free AI job-application agent. No accounts, no payments, no
 database — content lives in typed TS files under `/content` and MDX under `/content/blog`.
 
 ## Stack
@@ -54,8 +54,10 @@ marketing site need nothing.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | Yes | Powers `/api/tailor`. Without it, the route returns 503 and the UI shows a friendly error. |
-| `ANTHROPIC_MODEL` | No (defaults to `claude-3-5-sonnet-latest`) | Override the model used for tailoring. |
+| `GEMINI_API_KEY` | Either Gemini or Anthropic is required | Powers `/api/tailor` via Google Gemini (defaults to `gemini-1.5-flash`). |
+| `GEMINI_MODEL` | No (defaults to `gemini-1.5-flash`) | Override Gemini model (e.g. `gemini-1.5-pro` or `gemini-2.0-flash`). |
+| `ANTHROPIC_API_KEY` | Optional alternative | Powers `/api/tailor` with Anthropic Claude if Gemini is not set. |
+| `ANTHROPIC_MODEL` | No (defaults to `claude-3-5-sonnet-latest`) | Override the Claude model used for tailoring. |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | No | Enables shared, multi-instance rate limiting for `/api/tailor`. Without these, it falls back to an in-memory per-process limiter — fine for local dev, not for a multi-instance production deploy. |
 
 ## Deploying to Vercel

@@ -27,11 +27,11 @@ export function DashboardMock() {
       className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border scale-90 sm:scale-100"
       style={{ borderColor: '#15362B', boxShadow: 'var(--shadow-card)' }}
       role="img"
-      aria-label="Mock Offerlane dashboard showing a list of job applications and their statuses"
+      aria-label="Mock RolePilot dashboard showing a list of job applications and their statuses"
     >
       <div className="grid grid-cols-[180px_1fr]" style={{ background: '#15362B' }}>
         <div className="flex flex-col gap-1 p-4" style={{ color: '#ECFDF5' }}>
-          <span className="mb-4 px-2 font-display text-lg">Offerlane</span>
+          <span className="mb-4 px-2 font-display text-lg">RolePilot</span>
           {NAV_ITEMS.map((item) => (
             <div
               key={item.label}

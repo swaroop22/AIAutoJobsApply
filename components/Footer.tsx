@@ -29,7 +29,7 @@ export function Footer() {
       <div className="ol-container ol-section">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <span className="font-display text-xl">Offerlane</span>
+            <span className="font-display text-xl">RolePilot</span>
             <p className="mt-3 max-w-xs text-sm text-body">
               A free agent that finds, tailors, applies, and tracks — so your job search runs
               while you do everything else.
@@ -37,21 +37,21 @@ export function Footer() {
             <div className="mt-5 flex items-center gap-3">
               <a
                 href="https://linkedin.com"
-                aria-label="Offerlane on LinkedIn"
+                aria-label="RolePilot on LinkedIn"
                 className="flex h-9 w-9 items-center justify-center rounded-pill border border-line text-ink/70 hover:text-ink"
               >
                 <Linkedin size={16} />
               </a>
               <a
                 href="https://x.com"
-                aria-label="Offerlane on X"
+                aria-label="RolePilot on X"
                 className="flex h-9 w-9 items-center justify-center rounded-pill border border-line text-ink/70 hover:text-ink"
               >
                 <Twitter size={16} />
               </a>
               <a
-                href="mailto:hello@offerlane.com"
-                aria-label="Email Offerlane"
+                href="mailto:hello@rolepilot.com"
+                aria-label="Email RolePilot"
                 className="flex h-9 w-9 items-center justify-center rounded-pill border border-line text-ink/70 hover:text-ink"
               >
                 <Mail size={16} />
@@ -65,7 +65,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-line pt-6 text-sm text-muted-2 md:flex-row md:items-center md:justify-between">
-          <span>© {year} Offerlane. All rights reserved.</span>
+          <span>© {year} RolePilot. All rights reserved.</span>
           <span>Free forever. No account, no card, no catch.</span>
         </div>
       </div>

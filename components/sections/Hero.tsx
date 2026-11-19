@@ -20,7 +20,7 @@ export function Hero() {
         <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
           <Reveal delay={140}>
             <p className="max-w-xl text-lg leading-relaxed text-body">
-              Offerlane watches {stats.careerPagesMonitored} career pages {stats.monitoringInterval},
+              RolePilot watches {stats.careerPagesMonitored} career pages {stats.monitoringInterval},
               matches new postings against your real background, and submits a tailored
               application through the company's actual applicant system — before most people
               have finished reading the listing.
@@ -47,14 +47,14 @@ export function Hero() {
             </span>
             <a
               href="/messaging"
-              aria-label="Offerlane on iMessage"
+              aria-label="RolePilot on iMessage"
               className="flex h-9 w-9 items-center justify-center rounded-pill border border-line text-ink/70 hover:text-ink"
             >
               <MessageCircle size={16} />
             </a>
             <a
               href="/messaging"
-              aria-label="Offerlane on WhatsApp"
+              aria-label="RolePilot on WhatsApp"
               className="flex h-9 w-9 items-center justify-center rounded-pill border border-line text-ink/70 hover:text-ink"
             >
               <MessageCircle size={16} />

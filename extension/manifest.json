@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "RolePilot — AI Job Application Autofill",
+  "version": "1.0.0",
+  "description": "1-Click AI Autofill for Greenhouse, Lever, Workday, and hospital job applications.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "RolePilot Autofill"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.greenhouse.io/*",
+        "*://*.lever.co/*",
+        "*://*.myworkdayjobs.com/*",
+        "*://*.icims.com/*",
+        "*://*.ashbyhq.com/*",
+        "*://*.taleo.net/*",
+        "*://*/*jobs/*",
+        "*://*/*careers/*",
+        "*://*/*apply/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

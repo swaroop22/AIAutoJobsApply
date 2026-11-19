@@ -49,7 +49,7 @@ export const platforms: Platform[] = [
   {
     id: 'mcp',
     name: 'MCP server',
-    description: 'Plug Offerlane into Claude, Cursor, or your own agent stack.',
+    description: 'Plug RolePilot into Claude, Cursor, or your own agent stack.',
     href: '/mcp',
     icon: 'terminal-square',
   },

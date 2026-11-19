@@ -17,9 +17,9 @@ function getTool(slug: string) {
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const tool = getTool(params.slug);
-  if (!tool) return buildMetadata({ title: 'Interview prep — Offerlane' });
+  if (!tool) return buildMetadata({ title: 'Interview prep — RolePilot' });
   return buildMetadata({
-    title: `${tool.name} — Offerlane interview prep`,
+    title: `${tool.name} — RolePilot interview prep`,
     description: tool.description,
     path: `/interview-prep/${tool.slug}`,
   });

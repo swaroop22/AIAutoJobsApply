@@ -1,4 +1,5 @@
-import type { ResumeEducation, ResumeExperience } from '@/lib/app-db/types';
+import type { ResumeEducation, ResumeExperience, SeniorityLevel } from '@/lib/app-db/types';
+import { detectSeniority } from '@/lib/matching';
 
 export type ParsedResume = {
   fullName?: string;
@@ -8,6 +9,11 @@ export type ParsedResume = {
   skills: string[];
   experience: ResumeExperience[];
   education: ResumeEducation[];
+};
+
+export type SuggestedPreferences = {
+  titles: string[];
+  seniority: SeniorityLevel[];
 };
 
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
@@ -112,5 +118,86 @@ export function parseResumeText(rawText: string): ParsedResume {
     skills: parseSkills(sections.skills ?? []),
     experience: parseExperience(sections.experience ?? []),
     education: parseEducation(sections.education ?? []),
+  };
+}
+
+export function suggestPreferencesFromResume(parsed: ParsedResume): SuggestedPreferences {
+  const titles = new Set<string>();
+  const senioritySet = new Set<SeniorityLevel>();
+
+  for (const exp of parsed.experience.slice(0, 3)) {
+    if (!exp.title) continue;
+
+    // Clean up title: remove parentheticals like (Contract), (Remote), etc.
+    const clean = exp.title
+      .replace(/\s*\([^)]*\)/g, '')
+      .split(/ - | — | at | @ | \| /)[0]
+      .trim();
+
+    if (!clean || clean.length < 3) continue;
+
+    const detected = detectSeniority(exp.title);
+    if (detected) {
+      senioritySet.add(detected);
+    }
+
+    // Strip seniority prefixes (Senior, Staff, etc.) to get the core role for broader matching
+    const core = clean
+      .replace(/^(senior|sr\.?|junior|jr\.?|staff|lead|principal|associate|intern)\s+/i, '')
+      .trim();
+
+    if (core && core.length >= 3) {
+      titles.add(core);
+    } else {
+      titles.add(clean);
+    }
+  }
+
+  // Check for healthcare / medical coding roles and credentials across all parsed sections
+  const fullContent = [
+    parsed.summary ?? '',
+    ...parsed.skills,
+    ...parsed.experience.map((e) => `${e.title} ${e.bullets.join(' ')}`),
+  ].join(' ');
+
+  const hasHealthcareCoding =
+    /coder|coding|him|billing|revenue\s*cycle|cdi|clinical\s*documentation|icd[- ]?10|cpt|hcpcs|ahima|aapc|cpc|ccs|rhia|rhit/i.test(
+      fullContent,
+    );
+
+  if (hasHealthcareCoding) {
+    if (/outpatient/i.test(fullContent)) titles.add('Outpatient Coding Specialist');
+    if (/inpatient/i.test(fullContent)) titles.add('Inpatient Medical Coder');
+    if (/him/i.test(fullContent)) titles.add('HIM Coder');
+    titles.add('Medical Coder');
+    titles.add('Coding Specialist');
+  }
+
+  // Fallback: check summary for common tech/design/product roles if none found in experience or healthcare
+  if (titles.size === 0 && parsed.summary) {
+    const commonRoles = [
+      'Software Engineer',
+      'Frontend Engineer',
+      'Backend Engineer',
+      'Full Stack Engineer',
+      'Data Engineer',
+      'Data Scientist',
+      'Product Manager',
+      'Product Designer',
+      'DevOps Engineer',
+      'Machine Learning Engineer',
+      'Security Engineer',
+    ];
+    for (const role of commonRoles) {
+      if (new RegExp(`\\b${role}\\b`, 'i').test(parsed.summary)) {
+        titles.add(role);
+        break;
+      }
+    }
+  }
+
+  return {
+    titles: Array.from(titles).slice(0, 4),
+    seniority: Array.from(senioritySet),
   };
 }

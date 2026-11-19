@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
 import { extractResumeText } from '@/lib/resume-parse/extract-text';
-import { parseResumeText } from '@/lib/resume-parse/structure';
+import { parseResumeText, suggestPreferencesFromResume } from '@/lib/resume-parse/structure';
 import type { WizardState } from './wizard-state';
 
 export function ResumeUploadStep({
@@ -27,6 +27,8 @@ export function ResumeUploadStep({
     try {
       const rawText = await extractResumeText(file);
       const parsed = parseResumeText(rawText);
+      const suggestions = suggestPreferencesFromResume(parsed);
+
       update({
         fileName: file.name,
         rawText,
@@ -37,6 +39,12 @@ export function ResumeUploadStep({
         skills: parsed.skills,
         experience: parsed.experience,
         education: parsed.education,
+        ...(state.titles.length === 0 && suggestions.titles.length > 0
+          ? { titles: suggestions.titles }
+          : {}),
+        ...(state.seniority.length === 0 && suggestions.seniority.length > 0
+          ? { seniority: suggestions.seniority }
+          : {}),
       });
       setStatus('done');
     } catch (err) {
@@ -86,8 +94,16 @@ export function ResumeUploadStep({
 
       {status === 'done' && (
         <div className="mt-5 rounded-xl bg-paper px-4 py-3 text-sm text-ink/70">
-          Parsed {state.experience.length} role{state.experience.length === 1 ? '' : 's'} and{' '}
-          {state.skills.length} skills. You can fix anything by hand on the next screens.
+          <p>
+            Parsed {state.experience.length} role{state.experience.length === 1 ? '' : 's'} and{' '}
+            {state.skills.length} skills. You can review and adjust anything on the next screens.
+          </p>
+          {state.titles.length > 0 && (
+            <p className="mt-1.5 text-xs text-ink/60">
+              Suggested target role{state.titles.length === 1 ? '' : 's'}:{' '}
+              <span className="font-medium text-ink">{state.titles.join(', ')}</span>
+            </p>
+          )}
         </div>
       )}
 

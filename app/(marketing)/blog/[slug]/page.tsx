@@ -10,9 +10,9 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const post = getBlogPost(params.slug);
-  if (!post) return buildMetadata({ title: 'Blog — Offerlane' });
+  if (!post) return buildMetadata({ title: 'Blog — RolePilot' });
   return buildMetadata({
-    title: `${post.meta.title} — Offerlane`,
+    title: `${post.meta.title} — RolePilot`,
     description: post.meta.description,
     path: `/blog/${post.meta.slug}`,
   });

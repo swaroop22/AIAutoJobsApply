@@ -7,7 +7,7 @@ import type {
   ApplicationEntry,
 } from './types';
 
-export class OfferlaneDB extends Dexie {
+export class RolePilotDB extends Dexie {
   profile!: Table<ResumeProfile, string>;
   preferences!: Table<Preferences, string>;
   savedJobs!: Table<SavedJob, string>;
@@ -15,7 +15,7 @@ export class OfferlaneDB extends Dexie {
   applications!: Table<ApplicationEntry, string>;
 
   constructor() {
-    super('offerlane');
+    super('rolepilot');
     this.version(1).stores({
       profile: 'id',
       preferences: 'id',
@@ -26,19 +26,19 @@ export class OfferlaneDB extends Dexie {
   }
 }
 
-let instance: OfferlaneDB | undefined;
+let instance: RolePilotDB | undefined;
 
 /**
  * Dexie opens IndexedDB at construction time, which doesn't exist during
  * Next.js server rendering. Only ever call this from inside an effect or
  * an event handler, never from render-body or module scope.
  */
-export function getDb(): OfferlaneDB {
+export function getDb(): RolePilotDB {
   if (typeof window === 'undefined') {
     throw new Error('getDb() can only be called in the browser');
   }
   if (!instance) {
-    instance = new OfferlaneDB();
+    instance = new RolePilotDB();
   }
   return instance;
 }
