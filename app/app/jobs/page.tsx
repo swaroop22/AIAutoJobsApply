@@ -85,7 +85,9 @@ export default function JobsPage() {
   // Filter states
   const [workplaceFilter, setWorkplaceFilter] = useState<'all' | 'remote' | 'onsite'>('all');
   const [minMatch, setMinMatch] = useState<number>(0);
-  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<'all' | '24h' | '7d' | '30d'>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [companyFilter, setCompanyFilter] = useState<string>('all');
   const [visaFilter, setVisaFilter] = useState<boolean>(false);
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -142,11 +144,23 @@ export default function JobsPage() {
     };
   }, []);
 
-  // Load hidden IDs from localStorage
+  // Load hidden IDs and URL parameters on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem('rolepilot_hidden_jobs');
       if (stored) setHiddenIds(JSON.parse(stored));
+
+      if (typeof window !== 'undefined') {
+        const p = new URLSearchParams(window.location.search);
+        const d = p.get('date');
+        if (d && ['all', '24h', '7d', '30d'].includes(d)) setDateFilter(d as any);
+        const w = p.get('workplace');
+        if (w && ['all', 'remote', 'onsite'].includes(w)) setWorkplaceFilter(w as any);
+        const l = p.get('location');
+        if (l) setLocationFilter(l);
+        const c = p.get('company');
+        if (c) setCompanyFilter(c);
+      }
     } catch {
       // ignore
     }
@@ -260,7 +274,26 @@ export default function JobsPage() {
     return scoreJobs(jobs, activePrefs);
   }, [jobs, preferences]);
 
-  // Combined filtering
+  // Derive unique locations and companies dynamically from jobs
+  const availableLocations = useMemo(() => {
+    const locs = new Set<string>();
+    jobs.forEach((j) => {
+      if (j.location && j.location !== 'Location TBD' && j.location !== 'Remote') {
+        locs.add(j.location);
+      }
+    });
+    return Array.from(locs).sort();
+  }, [jobs]);
+
+  const availableCompanies = useMemo(() => {
+    const comps = new Set<string>();
+    jobs.forEach((j) => {
+      if (j.company) comps.add(j.company);
+    });
+    return Array.from(comps).sort();
+  }, [jobs]);
+
+  // Combined filtering with full working Date, Workplace, Location, Company, Visa
   const filtered = useMemo(() => {
     const hiddenSet = new Set(hiddenIds);
     const q = query.trim().toLowerCase();
@@ -272,7 +305,7 @@ export default function JobsPage() {
       // Tab filter
       if (navTab === 'for_you' && job.fitScore < 70) return false;
 
-      // Query filter
+      // Query search
       if (q) {
         const matchesQuery =
           job.title.toLowerCase().includes(q) ||
@@ -282,19 +315,57 @@ export default function JobsPage() {
         if (!matchesQuery) return false;
       }
 
-      // Workplace filter
+      // 1. Date filter (24h, 7d, 30d)
+      if (dateFilter !== 'all') {
+        if (!job.postedAt) return false;
+        const postTime = new Date(job.postedAt).getTime();
+        const diffHours = (Date.now() - postTime) / (1000 * 60 * 60);
+        if (isNaN(diffHours) || diffHours < 0) return true;
+
+        if (dateFilter === '24h' && diffHours > 24) return false;
+        if (dateFilter === '7d' && diffHours > 168) return false;
+        if (dateFilter === '30d' && diffHours > 720) return false;
+      }
+
+      // 2. Workplace filter (Remote vs Onsite)
       if (workplaceFilter === 'remote' && !job.remote) return false;
       if (workplaceFilter === 'onsite' && job.remote) return false;
 
-      // Min match filter
+      // 3. Location filter
+      if (locationFilter !== 'all') {
+        const targetLoc = locationFilter.toLowerCase();
+        const jobLoc = (job.location || '').toLowerCase();
+        if (targetLoc === 'remote') {
+          if (!job.remote && !jobLoc.includes('remote')) return false;
+        } else if (!jobLoc.includes(targetLoc)) {
+          return false;
+        }
+      }
+
+      // 4. Company filter
+      if (companyFilter !== 'all') {
+        if (job.company.toLowerCase() !== companyFilter.toLowerCase()) return false;
+      }
+
+      // 5. Min match filter
       if (minMatch > 0 && job.fitScore < minMatch) return false;
 
-      // Visa filter
+      // 6. Visa filter
       if (visaFilter && job.sponsorshipSignal === 'negative') return false;
 
       return true;
     });
-  }, [scored, query, workplaceFilter, minMatch, visaFilter, hiddenIds, navTab]);
+  }, [scored, query, dateFilter, workplaceFilter, locationFilter, companyFilter, minMatch, visaFilter, hiddenIds, navTab]);
+
+  const hasActiveFilters = Boolean(
+    query.trim() ||
+    workplaceFilter !== 'all' ||
+    dateFilter !== 'all' ||
+    locationFilter !== 'all' ||
+    companyFilter !== 'all' ||
+    minMatch > 0 ||
+    visaFilter
+  );
 
   // Format relative time (e.g. "17 hours ago", "18 hours ago")
   function formatRelativeTime(postedAt?: string) {
@@ -419,77 +490,107 @@ export default function JobsPage() {
         </button>
       </div>
 
-      {/* 3. Filter Pills Row (Exact replica of Tsenta filters) */}
+      {/* 3. Filter Pills Row (Exact replica of Tsenta filters - fully interactive) */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs font-semibold">
-        {/* Date Filter */}
-        <button
-          onClick={() => setDateFilter(dateFilter === '24h' ? 'all' : '24h')}
-          className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border transition ${
-            dateFilter === '24h'
-              ? 'bg-black text-white border-black'
-              : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
-          }`}
-        >
-          <span>Date · 24h</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
+        {/* Date Filter Dropdown */}
+        <div className="relative shrink-0">
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as any)}
+            className={`appearance-none cursor-pointer rounded-full pl-4 pr-7 py-2 border transition text-xs font-semibold outline-none ${
+              dateFilter !== 'all'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
+            }`}
+          >
+            <option value="all" className="bg-white text-black">Date · Any</option>
+            <option value="24h" className="bg-white text-black">Date · Past 24h</option>
+            <option value="7d" className="bg-white text-black">Date · Past 7 days</option>
+            <option value="30d" className="bg-white text-black">Date · Past 30 days</option>
+          </select>
+          <ChevronDown
+            size={13}
+            className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 ${
+              dateFilter !== 'all' ? 'text-white' : 'text-black/50'
+            }`}
+          />
+        </div>
 
-        {/* Show jobs without Auto Apply */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Show jobs without Auto Apply</span>
-        </button>
+        {/* Workplace Filter Dropdown */}
+        <div className="relative shrink-0">
+          <select
+            value={workplaceFilter}
+            onChange={(e) => setWorkplaceFilter(e.target.value as any)}
+            className={`appearance-none cursor-pointer rounded-full pl-4 pr-7 py-2 border transition text-xs font-semibold outline-none ${
+              workplaceFilter !== 'all'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
+            }`}
+          >
+            <option value="all" className="bg-white text-black">Workplace · All</option>
+            <option value="remote" className="bg-white text-black">Workplace · Remote Only</option>
+            <option value="onsite" className="bg-white text-black">Workplace · On-site / Hospital</option>
+          </select>
+          <ChevronDown
+            size={13}
+            className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 ${
+              workplaceFilter !== 'all' ? 'text-white' : 'text-black/50'
+            }`}
+          />
+        </div>
 
-        {/* Location */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Location</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
+        {/* Location Filter Dropdown */}
+        <div className="relative shrink-0">
+          <select
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+            className={`appearance-none cursor-pointer rounded-full pl-4 pr-7 py-2 border transition text-xs font-semibold outline-none ${
+              locationFilter !== 'all'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
+            }`}
+          >
+            <option value="all" className="bg-white text-black">Location · All</option>
+            <option value="Remote" className="bg-white text-black">Remote Only</option>
+            {availableLocations.map((loc) => (
+              <option key={loc} value={loc} className="bg-white text-black">
+                {loc}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={13}
+            className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 ${
+              locationFilter !== 'all' ? 'text-white' : 'text-black/50'
+            }`}
+          />
+        </div>
 
-        {/* Workplace */}
-        <button
-          onClick={() => setWorkplaceFilter(workplaceFilter === 'remote' ? 'all' : 'remote')}
-          className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border transition ${
-            workplaceFilter === 'remote'
-              ? 'bg-black text-white border-black'
-              : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
-          }`}
-        >
-          <span>Workplace {workplaceFilter === 'remote' ? '(Remote)' : ''}</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
-
-        {/* Companies */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Companies</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
-
-        {/* Degree level */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Degree level</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
-
-        {/* Max experience */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Max experience</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
+        {/* Companies Filter Dropdown */}
+        <div className="relative shrink-0">
+          <select
+            value={companyFilter}
+            onChange={(e) => setCompanyFilter(e.target.value)}
+            className={`appearance-none cursor-pointer rounded-full pl-4 pr-7 py-2 border transition text-xs font-semibold outline-none ${
+              companyFilter !== 'all'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
+            }`}
+          >
+            <option value="all" className="bg-white text-black">Companies · All</option>
+            {availableCompanies.map((c) => (
+              <option key={c} value={c} className="bg-white text-black">
+                {c}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={13}
+            className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 ${
+              companyFilter !== 'all' ? 'text-white' : 'text-black/50'
+            }`}
+          />
+        </div>
 
         {/* Needs visa sponsorship */}
         <button
@@ -503,31 +604,29 @@ export default function JobsPage() {
           <span>Needs visa sponsorship</span>
         </button>
 
-        {/* No clearance jobs */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>No clearance jobs</span>
-        </button>
-
-        {/* Role */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Role</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
-
-        {/* Pay */}
-        <button
-          onClick={() => {}}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 border border-black/15 bg-white text-black/80 hover:bg-black/5 transition"
-        >
-          <span>Pay</span>
-          <ChevronDown size={13} className="opacity-60" />
-        </button>
+        {/* Min Match Filter */}
+        <div className="relative shrink-0">
+          <select
+            value={minMatch}
+            onChange={(e) => setMinMatch(Number(e.target.value))}
+            className={`appearance-none cursor-pointer rounded-full pl-4 pr-7 py-2 border transition text-xs font-semibold outline-none ${
+              minMatch > 0
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black/85 border-black/15 hover:bg-black/5'
+            }`}
+          >
+            <option value={0} className="bg-white text-black">Match · Any %</option>
+            <option value={75} className="bg-white text-black">Match · 75%+</option>
+            <option value={80} className="bg-white text-black">Match · 80%+</option>
+            <option value={85} className="bg-white text-black">Match · 85%+</option>
+          </select>
+          <ChevronDown
+            size={13}
+            className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 ${
+              minMatch > 0 ? 'text-white' : 'text-black/50'
+            }`}
+          />
+        </div>
       </div>
 
       {/* 4. Action Row: Clear filters / Use my search / Ask to tune / Apply to top 5 */}
@@ -538,10 +637,12 @@ export default function JobsPage() {
               setQuery('');
               setWorkplaceFilter('all');
               setDateFilter('all');
+              setLocationFilter('all');
+              setCompanyFilter('all');
               setVisaFilter(false);
               setMinMatch(0);
             }}
-            className="hover:underline text-black/80"
+            className="hover:underline text-black/80 cursor-pointer"
           >
             Clear filters
           </button>
@@ -589,6 +690,136 @@ export default function JobsPage() {
           </button>
         </div>
       </div>
+
+      {/* Active Filter Chips Bar */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 pt-1 pb-1 text-xs">
+          <span className="font-bold text-black/60 mr-1">
+            Active filters ({filtered.length} {filtered.length === 1 ? 'role' : 'roles'} match):
+          </span>
+
+          {query.trim() && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>Search: &ldquo;{query}&rdquo;</span>
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove search filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {dateFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>
+                Date:{' '}
+                {dateFilter === '24h'
+                  ? 'Past 24h'
+                  : dateFilter === '7d'
+                  ? 'Past 7 days'
+                  : 'Past 30 days'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setDateFilter('all')}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove date filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {workplaceFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>Workplace: {workplaceFilter === 'remote' ? 'Remote' : 'On-site'}</span>
+              <button
+                type="button"
+                onClick={() => setWorkplaceFilter('all')}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove workplace filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {locationFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>Location: {locationFilter}</span>
+              <button
+                type="button"
+                onClick={() => setLocationFilter('all')}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove location filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {companyFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>Company: {companyFilter}</span>
+              <button
+                type="button"
+                onClick={() => setCompanyFilter('all')}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove company filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {minMatch > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>Match: {minMatch}%+</span>
+              <button
+                type="button"
+                onClick={() => setMinMatch(0)}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove match filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {visaFilter && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 border border-black/15 px-3 py-1 font-semibold text-black">
+              <span>Needs visa sponsorship</span>
+              <button
+                type="button"
+                onClick={() => setVisaFilter(false)}
+                className="hover:text-red-600 transition cursor-pointer"
+                title="Remove visa filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setQuery('');
+              setWorkplaceFilter('all');
+              setDateFilter('all');
+              setLocationFilter('all');
+              setCompanyFilter('all');
+              setVisaFilter(false);
+              setMinMatch(0);
+            }}
+            className="text-xs font-bold text-red-600 hover:underline ml-1 cursor-pointer"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
 
       {/* 5. Tsenta Pastel Job Cards Grid */}
       <div className={`grid gap-4 mt-2 ${viewMode === 'grid' ? 'lg:grid-cols-2' : 'grid-cols-1'}`}>
