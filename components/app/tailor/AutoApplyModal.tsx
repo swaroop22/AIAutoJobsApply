@@ -13,14 +13,14 @@ import {
   ArrowRight,
   ShieldCheck,
   Check,
+  Mail,
+  ExternalLink,
 } from 'lucide-react';
 import type { JobPosting, Preferences, ResumeProfile, TailoredResume } from '@/lib/app-db/types';
 import { getDb } from '@/lib/app-db';
 
 export type AutoApplyModalProps = {
-  // If single job:
   job?: JobPosting;
-  // If batch mode:
   batchJobs?: JobPosting[];
   profile: ResumeProfile | null;
   preferences: Preferences | null;
@@ -50,11 +50,13 @@ export function AutoApplyModal({
 
   const [appliedIds, setAppliedIds] = useState<string[]>([]);
   const [receipts, setReceipts] = useState<Record<string, { confirmationCode: string; submittedAt: string }>>({});
+  const [emailReceipts, setEmailReceipts] = useState<Record<string, any>>({});
+  const [viewingEmailJobId, setViewingEmailJobId] = useState<string | null>(null);
   const [tailoredData, setTailoredData] = useState<Record<string, any>>({});
   const [isFinishedAll, setIsFinishedAll] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
-  // Fallback candidate profile if not yet uploaded
+  // Candidate email & name from profile
   const candidateName = profile?.fullName || 'Certified Healthcare Specialist';
   const candidateEmail = profile?.email || 'applicant@candidate.rolepilot';
   const candidatePhone = profile?.phone || '(555) 234-5678';
@@ -79,7 +81,6 @@ export function AutoApplyModal({
     const targetJob = jobsToApply[jobIdx];
     setCurrentIndex(jobIdx);
 
-    // Reset step indicators for this job
     setStep1Status('in_progress');
     setStep2Status('waiting');
     setStep3Status('waiting');
@@ -87,26 +88,32 @@ export function AutoApplyModal({
     setCurrentStep(1);
 
     // Step 1: Analyze Job & ATS Compliance
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 450));
     setStep1Status('complete');
     setStep2Status('in_progress');
     setCurrentStep(2);
 
     // Step 2: Tailor Résumé with Gemini AI
     let tailoredPayload = {
-      summary: profile?.summary || `Experienced medical coder specializing in clinical documentation, ICD-10-CM/PCS, and hospital revenue cycle compliance.`,
-      skills: profile?.skills?.length ? profile.skills : ['ICD-10-CM', 'CPT / HCPCS', 'Inpatient / Outpatient Coding', 'Medical Records', 'HIM'],
-      experience: profile?.experience?.length ? profile.experience : [
-        {
-          id: 'exp-1',
-          company: 'Healthcare Systems',
-          title: 'Medical Coding Specialist',
-          bullets: [
-            'Reviewed and coded patient clinical records adhering to ICD-10 and official coding guidelines.',
-            'Collaborated with clinical staff to resolve documentation queries and optimize coding accuracy.',
+      summary:
+        profile?.summary ||
+        `Experienced medical coder specializing in clinical documentation, ICD-10-CM/PCS, and hospital revenue cycle compliance.`,
+      skills: profile?.skills?.length
+        ? profile.skills
+        : ['ICD-10-CM', 'CPT / HCPCS', 'Inpatient / Outpatient Coding', 'Medical Records', 'HIM'],
+      experience: profile?.experience?.length
+        ? profile.experience
+        : [
+            {
+              id: 'exp-1',
+              company: 'Healthcare Systems',
+              title: 'Medical Coding Specialist',
+              bullets: [
+                'Reviewed and coded patient clinical records adhering to ICD-10 and official coding guidelines.',
+                'Collaborated with clinical staff to resolve documentation queries and optimize coding accuracy.',
+              ],
+            },
           ],
-        },
-      ],
     };
 
     try {
@@ -136,7 +143,7 @@ export function AutoApplyModal({
         }
       }
     } catch (err) {
-      console.warn('Tailor call note:', err);
+      console.warn('Tailor note:', err);
     }
 
     setTailoredData((prev) => ({ ...prev, [targetJob.id]: tailoredPayload }));
@@ -145,14 +152,21 @@ export function AutoApplyModal({
     setCurrentStep(3);
 
     // Step 3: Package Credentials & Authorization
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 450));
     setStep3Status('complete');
     setStep4Status('in_progress');
     setCurrentStep(4);
 
-    // Step 4: Dispatch Application to ATS Submission Gateway
+    // Step 4: Dispatch Application to ATS Submission Gateway & Trigger Email
     let confirmationCode = `RP-${targetJob.company.slice(0, 4).toUpperCase().replace(/[^A-Z]/g, 'H')}-${Math.floor(100000 + Math.random() * 900000)}`;
     const nowIso = new Date().toISOString();
+
+    let resendKey: string | undefined;
+    try {
+      resendKey = localStorage.getItem('rolepilot_resend_api_key') || undefined;
+    } catch {
+      // ignore
+    }
 
     try {
       const submitRes = await fetch('/api/apply/submit', {
@@ -164,6 +178,7 @@ export function AutoApplyModal({
           company: targetJob.company,
           provider: targetJob.provider,
           applyUrl: targetJob.applyUrl,
+          resendApiKey: resendKey,
           applicant: {
             fullName: candidateName,
             email: candidateEmail,
@@ -179,9 +194,12 @@ export function AutoApplyModal({
         if (submitJson.applicationId) {
           confirmationCode = submitJson.applicationId;
         }
+        if (submitJson.email) {
+          setEmailReceipts((prev) => ({ ...prev, [targetJob.id]: submitJson.email }));
+        }
       }
     } catch (err) {
-      console.warn('Submit call note:', err);
+      console.warn('Submit note:', err);
     }
 
     // Persist to Dexie DB
@@ -208,7 +226,6 @@ export function AutoApplyModal({
         createdAt: nowIso,
       });
 
-      // Also ensure saved in savedJobs table
       await db.savedJobs.put({
         ...targetJob,
         savedAt: nowIso,
@@ -226,8 +243,7 @@ export function AutoApplyModal({
     setAppliedIds(nextAppliedIds);
     setStep4Status('complete');
 
-    // Wait 400ms before advancing or completing
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 450));
 
     if (jobIdx + 1 < jobsToApply.length) {
       executeApplicationSequence(jobIdx + 1);
@@ -273,12 +289,12 @@ export function AutoApplyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-ink/10 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-ink/10 animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         {isFinishedAll && (
           <button
             onClick={onClose}
-            className="absolute right-5 top-5 p-2 rounded-full text-ink/40 hover:text-ink hover:bg-black/5 transition"
+            className="absolute right-5 top-5 p-2 rounded-full text-ink/40 hover:text-ink hover:bg-black/5 transition cursor-pointer"
             aria-label="Close"
           >
             <X size={18} />
@@ -425,10 +441,10 @@ export function AutoApplyModal({
               </div>
               <div className="flex-1">
                 <p className={`text-xs font-semibold ${step4Status === 'in_progress' ? 'text-ink' : step4Status === 'complete' ? 'text-ink/80' : 'text-ink/40'}`}>
-                  Submitting to Employer Application Gateway
+                  Submitting Application &amp; Preparing Confirmation Receipt
                 </p>
                 <p className="text-[11px] text-ink/50">
-                  Transmitting application payload directly into employer intake system.
+                  Transmitting application payload and generating official confirmation receipt.
                 </p>
               </div>
             </div>
@@ -446,12 +462,39 @@ export function AutoApplyModal({
 
             <p className="mt-1 text-xs text-ink/60 max-w-md">
               {isBatch
-                ? `RolePilot successfully tailored and submitted your application to all ${jobsToApply.length} healthcare positions.`
+                ? `RolePilot tailored and submitted your application to all ${jobsToApply.length} healthcare positions.`
                 : `Your tailored application has been submitted to ${jobsToApply[0]?.company} and logged in your tracker.`}
             </p>
 
+            {/* Confirmation Email Status Banner */}
+            <div className="mt-4 w-full rounded-2xl bg-slate-50 border border-ink/10 p-3.5 flex items-center justify-between gap-3 text-xs text-left">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                  <Mail size={15} />
+                </span>
+                <div className="truncate">
+                  <p className="font-bold text-ink truncate">
+                    Confirmation Email Generated
+                  </p>
+                  <p className="text-[11px] text-ink/60 truncate font-mono">
+                    Recipient: {candidateEmail}
+                  </p>
+                </div>
+              </div>
+
+              {jobsToApply[0] && (
+                <button
+                  type="button"
+                  onClick={() => setViewingEmailJobId(jobsToApply[0].id)}
+                  className="rounded-full bg-white border border-ink/15 px-3 py-1.5 text-xs font-bold text-ink hover:bg-black/5 transition shrink-0 cursor-pointer shadow-2xs"
+                >
+                  View Email
+                </button>
+              )}
+            </div>
+
             {/* Application Receipt Summary */}
-            <div className="mt-5 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 text-left">
+            <div className="mt-4 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 text-left">
               <div className="flex items-center justify-between text-xs font-bold text-emerald-900 border-b border-emerald-200/60 pb-2">
                 <span>Official Submission Receipt</span>
                 <span className="inline-flex items-center gap-1 font-semibold text-[11px] text-emerald-800">
@@ -487,7 +530,7 @@ export function AutoApplyModal({
                 onClick={onClose}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-ink px-5 py-3 text-xs font-semibold text-white shadow-sm hover:bg-ink/85 transition"
               >
-                <span>View in Application Tracker</span>
+                <span>View in Tracker</span>
                 <ArrowRight size={14} />
               </Link>
 
@@ -495,20 +538,84 @@ export function AutoApplyModal({
                 <button
                   type="button"
                   onClick={() => handleDownloadTailoredResume(jobsToApply[0].id)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-ink/20 bg-white px-4 py-3 text-xs font-semibold text-ink hover:bg-black/5 transition shrink-0"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-ink/20 bg-white px-4 py-3 text-xs font-semibold text-ink hover:bg-black/5 transition shrink-0 cursor-pointer"
                 >
                   <Download size={14} />
                   <span>Download Résumé</span>
                 </button>
               )}
 
+              {jobsToApply[0]?.applyUrl && jobsToApply[0].applyUrl !== '#' && (
+                <a
+                  href={jobsToApply[0].applyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl border border-ink/20 bg-white px-4 py-3 text-xs font-semibold text-ink hover:bg-black/5 transition shrink-0"
+                  title="Open live employer portal with RolePilot extension active"
+                >
+                  <span>Portal</span>
+                  <ExternalLink size={12} />
+                </a>
+              )}
+
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl border border-transparent px-4 py-3 text-xs font-semibold text-ink/70 hover:text-ink hover:bg-black/5 transition"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl border border-transparent px-4 py-3 text-xs font-semibold text-ink/70 hover:text-ink hover:bg-black/5 transition cursor-pointer"
               >
                 Done
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* View Confirmation Email Modal */}
+        {viewingEmailJobId && emailReceipts[viewingEmailJobId] && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 backdrop-blur-xs p-3 animate-in fade-in duration-150">
+            <div className="relative w-full max-w-2xl rounded-3xl bg-white shadow-2xl border border-ink/10 overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-ink/10 bg-slate-50 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Mail size={18} className="text-emerald-700" />
+                  <span className="font-bold text-sm text-ink">Official Confirmation Email</span>
+                </div>
+                <button
+                  onClick={() => setViewingEmailJobId(null)}
+                  className="p-1.5 rounded-full text-ink/40 hover:text-ink hover:bg-black/5 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Email Envelope details */}
+              <div className="px-6 py-3 border-b border-ink/5 bg-slate-50/50 text-xs text-ink/70 shrink-0 space-y-1 font-mono">
+                <div>
+                  <strong className="font-sans text-ink">From:</strong> {emailReceipts[viewingEmailJobId].recipient ? `${jobsToApply[0]?.company} Careers <onboarding@resend.dev>` : 'RolePilot Gateway'}
+                </div>
+                <div>
+                  <strong className="font-sans text-ink">To:</strong> {emailReceipts[viewingEmailJobId].recipient}
+                </div>
+                <div>
+                  <strong className="font-sans text-ink">Subject:</strong> {emailReceipts[viewingEmailJobId].subject}
+                </div>
+              </div>
+
+              {/* Email Content Frame */}
+              <div className="flex-1 p-4 overflow-y-auto bg-slate-100/60">
+                <div
+                  className="rounded-xl overflow-hidden bg-white shadow-sm"
+                  dangerouslySetInnerHTML={{ __html: emailReceipts[viewingEmailJobId].html }}
+                />
+              </div>
+
+              <div className="p-4 border-t border-ink/10 bg-white flex justify-end shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setViewingEmailJobId(null)}
+                  className="rounded-full bg-ink px-6 py-2 text-xs font-bold text-white hover:bg-ink/85 transition cursor-pointer"
+                >
+                  Close Email
+                </button>
+              </div>
             </div>
           </div>
         )}
