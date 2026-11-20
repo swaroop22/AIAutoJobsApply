@@ -389,6 +389,20 @@ export default function JobsPage() {
     return company.charAt(0);
   }
 
+  // Extract key clinical / technical skill badges (Tsenta-style card pills)
+  function extractSkillChips(job: ScoredJob): string[] {
+    const text = `${job.title} ${job.descriptionText || ''}`.toLowerCase();
+    const detected: string[] = [];
+    if (text.includes('coding') || text.includes('coder')) detected.push('Medical coding');
+    if (text.includes('record') || text.includes('him') || text.includes('health information')) detected.push('Medical records');
+    if (text.includes('icd-10') || text.includes('icd10')) detected.push('ICD-10-CM');
+    if (text.includes('cpt') || text.includes('hcpcs')) detected.push('CPT / HCPCS');
+    if (text.includes('revenue') || text.includes('billing')) detected.push('Revenue cycle');
+    if (text.includes('epic') || text.includes('cerner') || text.includes('ehr')) detected.push('EHR systems');
+    if (detected.length === 0) detected.push('Clinical documentation', 'Compliance');
+    return detected.slice(0, 2);
+  }
+
   if (loading || !loaded) {
     return (
       <div className="flex flex-col gap-4">
@@ -870,6 +884,18 @@ export default function JobsPage() {
                       {job.title}
                     </h3>
                   </Link>
+
+                  {/* Extracted Skill Chips (Tsenta-style card pills) */}
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {extractSkillChips(job).map((skill, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="inline-flex items-center rounded-lg bg-black/[0.06] border border-black/[0.05] px-2.5 py-0.5 text-[11px] font-bold text-black/75"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Bottom Row inside colored box: Save | Details */}

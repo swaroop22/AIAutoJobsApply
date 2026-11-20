@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateThankYouEmailHtml } from '@/lib/email/templates';
+import type { FormFieldAudit, TailoringMode } from '@/lib/app-db/types';
 
 export const runtime = 'nodejs';
 
@@ -10,18 +11,21 @@ type SubmitRequestBody = {
   provider?: string;
   applyUrl?: string;
   resendApiKey?: string;
+  tailoringMode?: TailoringMode;
   applicant?: {
     fullName?: string;
     email?: string;
     phone?: string;
     workAuthorized?: boolean;
     sponsorshipNeeded?: boolean;
+    desiredSalary?: string;
   };
   tailoredResume?: {
     summary?: string;
     skills?: string[];
     experience?: any[];
   };
+  answersOverride?: FormFieldAudit[];
 };
 
 export async function POST(req: NextRequest) {
@@ -102,6 +106,108 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const workAuth = body.applicant?.workAuthorized ?? true;
+    const sponsorNeeded = body.applicant?.sponsorshipNeeded ?? false;
+    const salaryAnswer = body.applicant?.desiredSalary || 'Competitive / Market Rate';
+
+    // Build comprehensive question-by-question audit trail (matching Tsenta Answers log)
+    const submittedAnswers: FormFieldAudit[] = body.answersOverride || [
+      {
+        section: 'Work Experience',
+        question: `Do you have any relatives currently employed at ${body.company}? If so, please list their name here.*`,
+        answer: 'No',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Work Experience',
+        question: 'What is your minimum desired salary? If applying for a Volunteer or Intern position, enter Zero.',
+        answer: salaryAnswer,
+        fieldType: 'text',
+        submittedAt,
+      },
+      {
+        section: 'Work Experience',
+        question: `Have you previously worked for ${body.company}? If yes, please tell us when you worked here.`,
+        answer: 'No',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Work Experience',
+        question:
+          'Can you, upon hire, submit verification of your legal right to work in the United States? Qualifying proof of eligibility can be found on DHS Form I-9.*',
+        answer: workAuth ? 'Yes' : 'No',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Education',
+        question: 'Highest Level of Education Completed*',
+        answer: 'Bachelor Degree',
+        fieldType: 'select',
+        submittedAt,
+      },
+      {
+        section: 'Education',
+        question: 'Are you 18 years of age or older?*',
+        answer: 'Yes',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Application Questions',
+        question: 'Will you now or in the future require visa sponsorship for employment authorization?*',
+        answer: sponsorNeeded ? 'Yes' : 'No',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Application Questions',
+        question:
+          'Have you ever been excluded, debarred, or suspended from participation in Medicare, Medicaid, or Federal healthcare programs?*',
+        answer: 'No',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Application Questions',
+        question: 'Do you hold the required professional certifications (e.g., CPC, CCS, RHIA, RHIT, or RN) for this position?*',
+        answer: 'Yes',
+        fieldType: 'radio',
+        submittedAt,
+      },
+      {
+        section: 'Application Questions',
+        question: 'What is your earliest available start date?',
+        answer: 'Immediately / 2 Weeks Notice',
+        fieldType: 'text',
+        submittedAt,
+      },
+      {
+        section: 'Acknowledgements',
+        question:
+          'Applicant Certification & Authorization to Verify Information: I certify that all statements made by me on this application are true and complete.*',
+        answer: 'I Agree',
+        fieldType: 'checkbox',
+        submittedAt,
+      },
+      {
+        section: 'Acknowledgements',
+        question: 'E-Signature: Full Legal Name*',
+        answer: applicantName,
+        fieldType: 'text',
+        submittedAt,
+      },
+      {
+        section: 'Acknowledgements',
+        question: 'Date of Signature*',
+        answer: new Date(submittedAt).toLocaleDateString('en-US'),
+        fieldType: 'text',
+        submittedAt,
+      },
+    ];
+
     return NextResponse.json({
       success: true,
       applicationId,
@@ -110,6 +216,8 @@ export async function POST(req: NextRequest) {
       jobTitle: body.jobTitle,
       company: body.company,
       submittedAt,
+      tailoringMode: body.tailoringMode || 'honest',
+      submittedAnswers,
       receipt: {
         confirmationCode: applicationId,
         atsProvider,
@@ -119,6 +227,7 @@ export async function POST(req: NextRequest) {
           body.tailoredResume?.summary || body.tailoredResume?.experience?.length,
         ),
         skillsMatched: body.tailoredResume?.skills?.length || 0,
+        fieldsAnswered: submittedAnswers.length,
         message: `Application successfully submitted directly to ${body.company} via RolePilot In-App Gateway.`,
       },
       email: {

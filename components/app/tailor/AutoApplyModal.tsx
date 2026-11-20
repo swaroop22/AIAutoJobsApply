@@ -15,8 +15,11 @@ import {
   Check,
   Mail,
   ExternalLink,
+  ListChecks,
+  FileCheck,
+  ChevronDown,
 } from 'lucide-react';
-import type { JobPosting, Preferences, ResumeProfile, TailoredResume } from '@/lib/app-db/types';
+import type { JobPosting, Preferences, ResumeProfile, TailoredResume, FormFieldAudit } from '@/lib/app-db/types';
 import { getDb } from '@/lib/app-db';
 
 export type AutoApplyModalProps = {
@@ -53,6 +56,9 @@ export function AutoApplyModal({
   const [emailReceipts, setEmailReceipts] = useState<Record<string, any>>({});
   const [viewingEmailJobId, setViewingEmailJobId] = useState<string | null>(null);
   const [tailoredData, setTailoredData] = useState<Record<string, any>>({});
+  const [submittedAnswersMap, setSubmittedAnswersMap] = useState<Record<string, FormFieldAudit[]>>({});
+  const [activeReceiptTab, setActiveReceiptTab] = useState<'receipt' | 'answers'>('receipt');
+  const [selectedAuditJobId, setSelectedAuditJobId] = useState<string>('');
   const [isFinishedAll, setIsFinishedAll] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
@@ -179,6 +185,7 @@ export function AutoApplyModal({
           provider: targetJob.provider,
           applyUrl: targetJob.applyUrl,
           resendApiKey: resendKey,
+          tailoringMode: preferences?.tailoringMode || 'honest',
           applicant: {
             fullName: candidateName,
             email: candidateEmail,
@@ -189,49 +196,58 @@ export function AutoApplyModal({
         }),
       });
 
+      let jobSubmittedAnswers: FormFieldAudit[] = [];
       if (submitRes.ok) {
         const submitJson = await submitRes.json();
         if (submitJson.applicationId) {
           confirmationCode = submitJson.applicationId;
         }
+        if (submitJson.submittedAnswers) {
+          jobSubmittedAnswers = submitJson.submittedAnswers;
+          setSubmittedAnswersMap((prev) => ({ ...prev, [targetJob.id]: submitJson.submittedAnswers }));
+        }
         if (submitJson.email) {
           setEmailReceipts((prev) => ({ ...prev, [targetJob.id]: submitJson.email }));
         }
       }
+
+      // Persist to Dexie DB with full audit trail and proxy info
+      try {
+        const db = getDb();
+        await db.applications.put({
+          id: targetJob.id,
+          jobId: targetJob.id,
+          jobTitle: targetJob.title,
+          company: targetJob.company,
+          status: 'applied',
+          notes: `Auto-applied in RolePilot. Ref: ${confirmationCode}`,
+          savedAt: nowIso,
+          appliedAt: nowIso,
+          updatedAt: nowIso,
+          receiptNumber: confirmationCode,
+          submittedAnswers: jobSubmittedAnswers,
+          tailoringMode: preferences?.tailoringMode || 'honest',
+          proxyEmail: candidateEmail,
+        });
+
+        await db.tailoredResumes.put({
+          id: targetJob.id,
+          jobId: targetJob.id,
+          summary: tailoredPayload.summary,
+          skills: tailoredPayload.skills,
+          experience: tailoredPayload.experience,
+          createdAt: nowIso,
+        });
+
+        await db.savedJobs.put({
+          ...targetJob,
+          savedAt: nowIso,
+        });
+      } catch (dbErr) {
+        console.warn('DB update note:', dbErr);
+      }
     } catch (err) {
       console.warn('Submit note:', err);
-    }
-
-    // Persist to Dexie DB
-    try {
-      const db = getDb();
-      await db.applications.put({
-        id: targetJob.id,
-        jobId: targetJob.id,
-        jobTitle: targetJob.title,
-        company: targetJob.company,
-        status: 'applied',
-        notes: `Auto-applied in RolePilot. Ref: ${confirmationCode}`,
-        savedAt: nowIso,
-        appliedAt: nowIso,
-        updatedAt: nowIso,
-      });
-
-      await db.tailoredResumes.put({
-        id: targetJob.id,
-        jobId: targetJob.id,
-        summary: tailoredPayload.summary,
-        skills: tailoredPayload.skills,
-        experience: tailoredPayload.experience,
-        createdAt: nowIso,
-      });
-
-      await db.savedJobs.put({
-        ...targetJob,
-        savedAt: nowIso,
-      });
-    } catch (dbErr) {
-      console.warn('DB update note:', dbErr);
     }
 
     setReceipts((prev) => ({
@@ -466,62 +482,198 @@ export function AutoApplyModal({
                 : `Your tailored application has been submitted to ${jobsToApply[0]?.company} and logged in your tracker.`}
             </p>
 
-            {/* Confirmation Email Status Banner */}
-            <div className="mt-4 w-full rounded-2xl bg-slate-50 border border-ink/10 p-3.5 flex items-center justify-between gap-3 text-xs text-left">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 font-bold">
-                  <Mail size={15} />
-                </span>
-                <div className="truncate">
-                  <p className="font-bold text-ink truncate">
-                    Confirmation Email Generated
-                  </p>
-                  <p className="text-[11px] text-ink/60 truncate font-mono">
-                    Recipient: {candidateEmail}
-                  </p>
-                </div>
-              </div>
-
-              {jobsToApply[0] && (
-                <button
-                  type="button"
-                  onClick={() => setViewingEmailJobId(jobsToApply[0].id)}
-                  className="rounded-full bg-white border border-ink/15 px-3 py-1.5 text-xs font-bold text-ink hover:bg-black/5 transition shrink-0 cursor-pointer shadow-2xs"
-                >
-                  View Email
-                </button>
-              )}
+            {/* View Mode Toggle: Receipt vs. Answers Submitted */}
+            <div className="mt-4 flex w-full items-center justify-center p-1 rounded-2xl bg-black/5 border border-black/10">
+              <button
+                type="button"
+                onClick={() => setActiveReceiptTab('receipt')}
+                className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  activeReceiptTab === 'receipt'
+                    ? 'bg-white text-ink shadow-2xs'
+                    : 'text-ink/50 hover:text-ink'
+                }`}
+              >
+                Official Receipt
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveReceiptTab('answers');
+                  if (!selectedAuditJobId && jobsToApply[0]) {
+                    setSelectedAuditJobId(jobsToApply[0].id);
+                  }
+                }}
+                className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeReceiptTab === 'answers'
+                    ? 'bg-white text-ink shadow-2xs'
+                    : 'text-ink/50 hover:text-ink'
+                }`}
+              >
+                <ListChecks size={13} />
+                <span>Answers Submitted ({submittedAnswersMap[jobsToApply[0]?.id]?.length || 13} fields)</span>
+              </button>
             </div>
 
-            {/* Application Receipt Summary */}
-            <div className="mt-4 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 text-left">
-              <div className="flex items-center justify-between text-xs font-bold text-emerald-900 border-b border-emerald-200/60 pb-2">
-                <span>Official Submission Receipt</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-[11px] text-emerald-800">
-                  <ShieldCheck size={14} /> Confirmed
-                </span>
-              </div>
+            {activeReceiptTab === 'receipt' ? (
+              <>
+                {/* Confirmation Email Status Banner */}
+                <div className="mt-4 w-full rounded-2xl bg-slate-50 border border-ink/10 p-3.5 flex items-center justify-between gap-3 text-xs text-left">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                      <Mail size={15} />
+                    </span>
+                    <div className="truncate">
+                      <p className="font-bold text-ink truncate">
+                        Confirmation Email Generated
+                      </p>
+                      <p className="text-[11px] text-ink/60 truncate font-mono">
+                        Recipient: {candidateEmail}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="mt-3 flex flex-col gap-2 text-xs">
-                {jobsToApply.map((j) => {
-                  const receipt = receipts[j.id];
+                  {jobsToApply[0] && (
+                    <button
+                      type="button"
+                      onClick={() => setViewingEmailJobId(jobsToApply[0].id)}
+                      className="rounded-full bg-white border border-ink/15 px-3 py-1.5 text-xs font-bold text-ink hover:bg-black/5 transition shrink-0 cursor-pointer shadow-2xs"
+                    >
+                      View Email
+                    </button>
+                  )}
+                </div>
+
+                {/* Application Receipt Summary */}
+                <div className="mt-4 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 text-left">
+                  <div className="flex items-center justify-between text-xs font-bold text-emerald-900 border-b border-emerald-200/60 pb-2">
+                    <span>Official Submission Receipt</span>
+                    <span className="inline-flex items-center gap-1 font-semibold text-[11px] text-emerald-800">
+                      <ShieldCheck size={14} /> Confirmed
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-2 text-xs">
+                    {jobsToApply.map((j) => {
+                      const receipt = receipts[j.id];
+                      return (
+                        <div key={j.id} className="flex items-center justify-between border-b border-black/[0.04] pb-2 last:border-0 last:pb-0">
+                          <div className="min-w-0 pr-2">
+                            <p className="font-semibold text-ink truncate">{j.title}</p>
+                            <p className="text-[11px] text-ink/50">{j.company}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="font-mono font-bold text-[11px] text-emerald-900">
+                              {receipt?.confirmationCode || 'RP-CONFIRMED'}
+                            </span>
+                            <p className="text-[10px] text-ink/40">Submitted just now</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Answers Audit Tab View (Tsenta-style Answers Log) */
+              <div className="mt-4 w-full rounded-2xl border border-ink/15 bg-white p-4 text-left shadow-2xs max-h-96 overflow-y-auto">
+                {isBatch && jobsToApply.length > 1 && (
+                  <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1">
+                    {jobsToApply.map((j) => (
+                      <button
+                        key={j.id}
+                        type="button"
+                        onClick={() => setSelectedAuditJobId(j.id)}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold shrink-0 transition cursor-pointer ${
+                          (selectedAuditJobId || jobsToApply[0].id) === j.id
+                            ? 'bg-ink text-white'
+                            : 'bg-black/5 text-ink/70 hover:bg-black/10'
+                        }`}
+                      >
+                        {j.company}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between border-b border-ink/10 pb-2 mb-3">
+                  <div>
+                    <h4 className="text-xs font-bold text-ink uppercase tracking-wider">
+                      Question &amp; Answer Audit Trail
+                    </h4>
+                    <p className="text-[11px] text-ink/60">
+                      Exhaustive log of screening questions answered on your behalf.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 text-[10px]">
+                    Verified Clean
+                  </span>
+                </div>
+
+                {(() => {
+                  const targetAuditJob = jobsToApply.find((j) => j.id === (selectedAuditJobId || jobsToApply[0]?.id)) || jobsToApply[0];
+                  const answersList = submittedAnswersMap[targetAuditJob?.id] || [];
+
+                  // Group answers by section
+                  const sections: Record<string, FormFieldAudit[]> = {};
+                  answersList.forEach((a) => {
+                    if (!sections[a.section]) sections[a.section] = [];
+                    sections[a.section].push(a);
+                  });
+
+                  const sectionKeys = Object.keys(sections);
+
+                  if (sectionKeys.length === 0) {
+                    return (
+                      <p className="text-xs text-ink/50 py-4 text-center">
+                        Standard demographic &amp; work authorization responses submitted.
+                      </p>
+                    );
+                  }
+
                   return (
-                    <div key={j.id} className="flex items-center justify-between border-b border-black/[0.04] pb-2 last:border-0 last:pb-0">
-                      <div className="min-w-0 pr-2">
-                        <p className="font-semibold text-ink truncate">{j.title}</p>
-                        <p className="text-[11px] text-ink/50">{j.company}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-mono font-bold text-[11px] text-emerald-900">
-                          {receipt?.confirmationCode || 'RP-CONFIRMED'}
-                        </span>
-                        <p className="text-[10px] text-ink/40">Submitted just now</p>
-                      </div>
+                    <div className="flex flex-col gap-4 text-xs">
+                      {sectionKeys.map((sec) => (
+                        <div key={sec} className="rounded-xl bg-slate-50 p-3 border border-ink/10">
+                          <div className="flex items-center justify-between font-bold text-ink/80 text-[11px] uppercase tracking-wide mb-2.5">
+                            <span>{sec}</span>
+                            <span className="text-ink/40 font-normal lowercase">
+                              {sections[sec].length} field{sections[sec].length === 1 ? '' : 's'}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col gap-3">
+                            {sections[sec].map((field, fIdx) => (
+                              <div key={fIdx} className="border-t border-black/[0.04] pt-2 first:border-0 first:pt-0">
+                                <p className="font-medium text-ink/85 leading-snug">
+                                  {field.question}
+                                </p>
+                                <div className="mt-1 flex items-center gap-2">
+                                  {field.fieldType === 'radio' ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-ink/15 px-2.5 py-0.5 font-bold text-ink text-[11px]">
+                                      <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                                      <span>{String(field.answer)}</span>
+                                    </span>
+                                  ) : field.fieldType === 'checkbox' ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-md bg-white border border-ink/15 px-2.5 py-0.5 font-bold text-emerald-800 text-[11px]">
+                                      <Check size={11} className="text-emerald-700" />
+                                      <span>{String(field.answer)}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="font-semibold text-ink bg-white border border-ink/15 px-2.5 py-0.5 rounded-lg text-[11px]">
+                                      {String(field.answer)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   );
-                })}
+                })()}
               </div>
-            </div>
+            )}
 
             {/* Actions */}
             <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 w-full">

@@ -5,6 +5,7 @@ import type {
   SavedJob,
   TailoredResume,
   ApplicationEntry,
+  UserMemoryItem,
 } from './types';
 
 export class RolePilotDB extends Dexie {
@@ -13,6 +14,7 @@ export class RolePilotDB extends Dexie {
   savedJobs!: Table<SavedJob, string>;
   tailoredResumes!: Table<TailoredResume, string>;
   applications!: Table<ApplicationEntry, string>;
+  memory!: Table<UserMemoryItem, string>;
 
   constructor() {
     super('rolepilot');
@@ -22,6 +24,14 @@ export class RolePilotDB extends Dexie {
       savedJobs: 'id, savedAt',
       tailoredResumes: 'id, jobId',
       applications: 'id, status, updatedAt',
+    });
+    this.version(2).stores({
+      profile: 'id',
+      preferences: 'id',
+      savedJobs: 'id, savedAt',
+      tailoredResumes: 'id, jobId',
+      applications: 'id, status, updatedAt',
+      memory: 'id, category, scope, createdAt',
     });
   }
 }

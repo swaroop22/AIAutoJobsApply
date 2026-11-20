@@ -32,6 +32,8 @@ export type ResumeProfile = {
 
 export type SeniorityLevel = 'intern' | 'junior' | 'mid' | 'senior' | 'staff' | 'lead';
 
+export type TailoringMode = 'off' | 'honest' | 'enhanced';
+
 export type Preferences = {
   id: 'preferences';
   titles: string[];
@@ -41,6 +43,9 @@ export type Preferences = {
   visaSponsorshipNeeded: boolean;
   workAuthorized: boolean;
   requiresNowOrFuture: 'now' | 'future' | 'both';
+  tailoringMode?: TailoringMode;
+  autoApproveResume?: boolean;
+  reviewBeforeSubmit?: boolean;
   updatedAt: string;
 };
 
@@ -78,6 +83,24 @@ export type TailoredResume = {
 
 export type ApplicationStatus = 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
 
+export type FormFieldAudit = {
+  section: string; // 'Work Experience' | 'Education' | 'Application Questions' | 'Acknowledgements'
+  question: string;
+  answer: string | boolean | number;
+  fieldType: 'radio' | 'text' | 'select' | 'checkbox';
+  submittedAt: string;
+};
+
+export type UserMemoryItem = {
+  id: string;
+  category: 'general' | 'compensation' | 'work_auth' | 'education' | 'experience' | 'custom';
+  prompt: string;
+  assertion: string;
+  scope: 'all' | 'resumes_only' | 'applications_only';
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ApplicationEntry = {
   id: string;
   jobId: string;
@@ -88,4 +111,9 @@ export type ApplicationEntry = {
   savedAt: string;
   appliedAt?: string;
   updatedAt: string;
+  receiptNumber?: string;
+  submittedAnswers?: FormFieldAudit[];
+  tailoringMode?: TailoringMode;
+  proxyEmail?: string;
+  confirmationSent?: boolean;
 };
