@@ -19,7 +19,7 @@ export const HEALTHCARE_SEED_JOBS: JobPosting[] = [
   <li>100% Remote position with comprehensive health benefits.</li>
 </ul>`,
     descriptionText: `The Outpatient Coding Specialist III reviews clinical documentation, extracts relevant clinical diagnostic and procedure information, and assigns ICD-10-CM and CPT/HCPCS codes in accordance with official coding guidelines for outpatient hospital and clinical encounters across hospital revenue cycle operations. Minimum 3+ years coding experience with CCS, CPC, or RHIA certification required. 100% Remote position.`,
-    applyUrl: 'https://anthc.org/careers/',
+    applyUrl: 'https://css-anthc-prd.inforcloudsuite.com:443/hcm/Jobs/navigation/JobBoard(1000,ANTHCEXTERNAL).JobSearchCompositeFormNav?csk.HROrganization=1000&csk.JobBoard=ANTHCEXTERNAL&web10x=true',
     postedAt: new Date(Date.now() - 17 * 3600 * 1000).toISOString(),
   },
   {

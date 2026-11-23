@@ -269,6 +269,10 @@ export function AutoApplyModal({
           submittedAnswers: jobSubmittedAnswers,
           tailoringMode: preferences?.tailoringMode || 'honest',
           proxyEmail: candidateEmail,
+          actionRequiredReason: atsStatus !== 'submitted' ? (actionRequiredReason || 'Account or verification required on employer portal') : undefined,
+          finishUrl: atsStatus !== 'submitted' ? finishUrl : undefined,
+          externalConfirmationUrl,
+          atsProvider,
         });
 
         await db.tailoredResumes.put({

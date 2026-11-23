@@ -116,4 +116,8 @@ export type ApplicationEntry = {
   tailoringMode?: TailoringMode;
   proxyEmail?: string;
   confirmationSent?: boolean;
+  actionRequiredReason?: string;
+  finishUrl?: string;
+  externalConfirmationUrl?: string;
+  atsProvider?: string;
 };
